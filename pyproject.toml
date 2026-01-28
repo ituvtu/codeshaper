@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "llm-api"
+name = "codeshaper"
 version = "1.0.0"
 description = "Professional LLM-powered code review and refactoring API"
-authors = ["Your Name <you@example.com>"]
+authors = ["Ivan <ivan@ituvtu.dev>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/yourusername/llm-api"
+repository = "https://github.com/ituvtu/codeshaper"
 keywords = ["llm", "code-review", "fastapi", "groq", "refactoring"]
 packages = [{ include = "app" }]
 

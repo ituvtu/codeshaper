@@ -1,107 +1,107 @@
 # Deployment Guide
 
-Цей документ описує як розгортати LLM API з використанням Docker та інших інструментів.
+This document describes how to deploy the CodeShaper LLM API using Docker and other tools.
 
-## Зміст
-1. [Локальна розробка](#локальна-розробка)
-2. [Docker для розробки](#docker-для-розробки)
-3. [Production розгортання](#production-розгортання)
+## Table of Contents
+1. [Local Development](#local-development)
+2. [Docker for Development](#docker-for-development)
+3. [Production Deployment](#production-deployment)
 4. [CI/CD Pipeline](#cicd-pipeline)
 5. [Secrets Management](#secrets-management)
-6. [Моніторинг та логування](#моніторинг-та-логування)
+6. [Monitoring and Logging](#monitoring-and-logging)
 
 ---
 
-## Локальна розробка
+## Local Development
 
-### Вимоги
+### Requirements
 - Python 3.11+
 - Poetry
 - Git
 
-### Установка
+### Installation
 ```bash
-# Клонування репозиторію
-git clone https://github.com/yourusername/llm-api.git
-cd llm-api
+# Clone the repository
+git clone https://github.com/ituvtu/codeshaper.git
+cd codeshaper
 
-# Установка залежностей
+# Install dependencies
 poetry install
 
-# Копіювання .env файлу
+# Copy .env file
 cp .env.example .env
-# Відредагуйте .env і додайте Groq API ключ
+# Edit .env and add your Groq API key
 ```
 
-### Запуск
+### Running
 ```bash
-# Активація venv та запуск сервера
+# Activate venv and run the server
 poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# На іншому терміналі для тестування
+# On another terminal for testing
 poetry run pytest tests/ -v
 ```
 
-API буде доступна на `http://localhost:8000`
-Документація: `http://localhost:8000/docs`
+API will be available at `http://localhost:8000`
+Documentation: `http://localhost:8000/docs`
 
 ---
 
-## Docker для розробки
+## Docker for Development
 
-### Вимоги
-- Docker Desktop (або Docker + Docker Compose)
-- 4GB+ RAM (рекомендується)
+### Requirements
+- Docker Desktop (or Docker + Docker Compose)
+- 4GB+ RAM (recommended)
 
-### Розробка з hot reload
+### Development with hot reload
 
 ```bash
-# Скопіюйте .env
+# Copy .env
 cp .env.example .env
 
-# Запустіть compose з hot reload
-docker-compose -f docker-compose.dev.yml up
+# Run compose with hot reload
+docker-compose -f deployment/docker-compose.dev.yml up
 
-# На іншому терміналі для тестування
-docker-compose -f docker-compose.dev.yml exec api poetry run pytest tests/
+# On another terminal for testing
+docker-compose -f deployment/docker-compose.dev.yml exec api poetry run pytest tests/
 ```
 
-**Особливості:**
-- Hot reload при змінах коду в `app/`
-- Redis автоматично запускається
-- Портове маршрутизування: 8000
-- Volumes для швидкого розробки
+**Features:**
+- Hot reload on code changes in `app/`
+- Redis starts automatically
+- Port routing: 8000
+- Volumes for quick development
 
-### Зупинка
+### Stop
 ```bash
-docker-compose -f docker-compose.dev.yml down
+docker-compose -f deployment/docker-compose.dev.yml down
 ```
 
 ---
 
-## Production розгортання
+## Production Deployment
 
-### Передумови
-- Groq API ключ
-- Docker та Docker Compose на сервері
-- SSL сертифікат (рекомендується)
-- Мінімум 1GB вільної пам'яті
+### Prerequisites
+- Groq API key
+- Docker and Docker Compose on server
+- SSL certificate (recommended)
+- Minimum 1GB free memory
 
-### Підготовка сервера
+### Server Preparation
 
 ```bash
-# 1. Оновіть систему
+# 1. Update system
 sudo apt-get update && sudo apt-get upgrade -y
 
-# 2. Встановіть Docker та Docker Compose
+# 2. Install Docker and Docker Compose
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 
-# 3. Завантажте репозиторій
-git clone https://github.com/yourusername/llm-api.git /opt/llm-api
-cd /opt/llm-api
+# 3. Download repository
+git clone https://github.com/ituvtu/codeshaper.git /opt/codeshaper
+cd /opt/codeshaper
 
-# 4. Створіть .env для production
+# 4. Create .env for production
 cat > .env << EOF
 API_KEY=your_groq_api_key_here
 MODEL=llama-3.1-8b-instant
@@ -110,46 +110,46 @@ PORT=8000
 LOG_LEVEL=info
 EOF
 
-# 5. Встановіть права доступу
-sudo chown -R $(id -u):$(id -g) /opt/llm-api
+# 5. Set permissions
+sudo chown -R $(id -u):$(id -g) /opt/codeshaper
 ```
 
-### Запуск production сервісу
+### Running Production Service
 
 ```bash
-# Без SSL
-docker-compose -f docker-compose.yml up -d
+# Without SSL
+docker-compose -f deployment/docker-compose.prod.yml up -d
 
-# З SSL (якщо у вас є сертифікати)
-# 1. Помістіть cert.pem та key.pem в поточну директорію
-# 2. Розкомментуйте SSL секцію в nginx.conf
-# 3. Запустіть:
-docker-compose -f docker-compose.yml up -d
+# With SSL (if you have certificates)
+# 1. Place cert.pem and key.pem in current directory
+# 2. Uncomment SSL section in nginx.conf
+# 3. Run:
+docker-compose -f deployment/docker-compose.prod.yml up -d
 ```
 
-### Перевірка статусу
+### Checking Status
 
 ```bash
-# Перевірте статус контейнерів
-docker-compose ps
+# Check container status
+docker-compose -f deployment/docker-compose.prod.yml ps
 
-# Перевірте логи API
-docker-compose logs api
+# Check API logs
+docker-compose -f deployment/docker-compose.prod.yml logs api
 
-# Перевірте логи Nginx
-docker-compose logs nginx
+# Check Nginx logs
+docker-compose -f deployment/docker-compose.prod.yml logs nginx
 
-# Перевірте health endpoint
+# Check health endpoint
 curl http://localhost/health
 ```
 
-### Масштабування
+### Scaling
 
 ```bash
-# Збільшіть кількість API інстансів (якщо використовуєте балансер навантаження)
-docker-compose up -d --scale api=3
+# Increase number of API instances (if using a load balancer)
+docker-compose -f deployment/docker-compose.prod.yml up -d --scale api=3
 
-# Або вручну відредагуйте docker-compose.yml і змініть replicas
+# Or manually edit docker-compose.yml and change replicas
 ```
 
 ---
@@ -158,43 +158,43 @@ docker-compose up -d --scale api=3
 
 ### GitHub Actions Setup
 
-1. **Додайте Secrets на GitHub:**
+1. **Add Secrets on GitHub:**
    ```
    Settings → Secrets and variables → Actions
    ```
-   Необхідні:
+   Required:
    - `DOCKER_USERNAME` - Docker Hub username
    - `DOCKER_PASSWORD` - Docker Hub password
-   - `SERVER_IP` - IP вашого production сервера
-   - `DEPLOY_KEY` - SSH приватний ключ
+   - `SERVER_IP` - IP of your production server
+   - `DEPLOY_KEY` - SSH private key
 
-2. **Workflow виконується на:**
-   - Push до `main` або `develop`
+2. **Workflow runs on:**
+   - Push to `main` or `develop`
    - Pull requests
-   - Tag push (v1.0.0 format для релізу)
+   - Tag push (v1.0.0 format for release)
 
-3. **Етапи Pipeline:**
-   - ✅ Тестування (Python 3.11, 3.12, 3.13)
+3. **Pipeline Steps:**
+   - ✅ Testing (Python 3.11, 3.12, 3.13)
    - ✅ Linting (Pylint, Mypy, Black)
-   - ✅ Coverage аналіз
-   - 🐳 Docker build та push (на tag)
+   - ✅ Coverage analysis
+   - 🐳 Docker build and push (on tag)
    - 🚀 Production deploy (manually triggered)
 
 ---
 
 ## Secrets Management
 
-### Локальні Secrets
+### Local Secrets
 
 ```bash
-# Ніколи не коммітте .env з реальними ключами!
+# Never commit .env with real keys!
 cp .env.example .env
 echo ".env" >> .gitignore
 ```
 
 ### Production Secrets
 
-**Варіант 1: Docker secrets (для Swarm)**
+**Option 1: Docker secrets (for Swarm)**
 ```bash
 echo "gsk_your_key" | docker secret create groq_api_key -
 docker-compose.yml:
@@ -202,26 +202,26 @@ docker-compose.yml:
     API_KEY_FILE: /run/secrets/groq_api_key
 ```
 
-**Варіант 2: Environment file**
+**Option 2: Environment file**
 ```bash
-# На сервері
-echo "API_KEY=gsk_..." > /opt/llm-api/.env.production
-chmod 600 /opt/llm-api/.env.production
+# On server
+echo "API_KEY=gsk_..." > /opt/codeshaper/.env.production
+chmod 600 /opt/codeshaper/.env.production
 
 # docker-compose.yml
 env_file:
   - .env.production
 ```
 
-**Варіант 3: AWS Secrets Manager / HashiCorp Vault**
+**Option 3: AWS Secrets Manager / HashiCorp Vault**
 ```bash
-# Встановіть клієнт та отримайте secrets перед запуском
-aws secretsmanager get-secret-value --secret-id llm-api-secrets
+# Install client and retrieve secrets before running
+aws secretsmanager get-secret-value --secret-id codeshaper-secrets
 ```
 
-### HTTPS/SSL сертифікати
+### HTTPS/SSL Certificates
 
-**Let's Encrypt з Certbot:**
+**Let's Encrypt with Certbot:**
 ```bash
 sudo certbot certonly --standalone -d api.yourdomain.com
 sudo cp /etc/letsencrypt/live/api.yourdomain.com/fullchain.pem ./cert.pem
@@ -230,27 +230,27 @@ sudo cp /etc/letsencrypt/live/api.yourdomain.com/privkey.pem ./key.pem
 
 ---
 
-## Моніторинг та логування
+## Monitoring and Logging
 
-### Перегляд логів
+### Viewing Logs
 
 ```bash
-# API логи
+# API logs
 docker-compose logs -f api
 
-# Nginx логи
+# Nginx logs
 docker-compose logs -f nginx
 
-# Redis логи
+# Redis logs
 docker-compose logs -f redis
 
-# Все разом
+# All together
 docker-compose logs -f
 ```
 
-### Метрики і Моніторинг
+### Metrics and Monitoring
 
-Додайте до production docker-compose.yml:
+Add to production docker-compose.yml:
 
 ```yaml
   prometheus:
@@ -273,7 +273,7 @@ docker-compose logs -f
 
 ### Health Checks
 
-Endpoint `/health` повертає:
+Endpoint `/health` returns:
 ```json
 {
   "status": "healthy",
@@ -282,9 +282,9 @@ Endpoint `/health` повертає:
 }
 ```
 
-Проверяйте регулярно:
+Check regularly:
 ```bash
-# Від сервера
+# From server
 while true; do 
   curl -s http://localhost/health | jq .
   sleep 60
@@ -293,58 +293,58 @@ done
 
 ---
 
-## Автоматичні оновлення
+## Automatic Updates
 
-### Через GitHub Actions
+### Via GitHub Actions
 
-1. Зробіть зміни в коді
-2. Push до develop
-3. Створіть Pull Request
-4. Merge до main після затвердження
-5. Créate new release tag (v1.0.1)
-6. CI/CD автоматично:
-   - Запускає тести
-   - Будує Docker image
-   - Пушить до реєстру
-   - (Опціонально) розгортає на production
+1. Make changes in code
+2. Push to develop
+3. Create Pull Request
+4. Merge to main after approval
+5. Create new release tag (v1.0.1)
+6. CI/CD automatically:
+   - Runs tests
+   - Builds Docker image
+   - Pushes to registry
+   - (Optional) deploys to production
 
-### Ручне оновлення
+### Manual Update
 
 ```bash
-cd /opt/llm-api
+cd /opt/codeshaper
 git pull origin main
-docker-compose -f docker-compose.yml down
-docker-compose -f docker-compose.yml pull
-docker-compose -f docker-compose.yml up -d
+docker-compose -f deployment/docker-compose.prod.yml down
+docker-compose -f deployment/docker-compose.prod.yml pull
+docker-compose -f deployment/docker-compose.prod.yml up -d
 ```
 
 ---
 
 ## Troubleshooting
 
-### Проблема: API не響дає
+### Issue: API Not Responding
 
 ```bash
-# 1. Перевірте контейнер
-docker-compose ps
+# 1. Check container
+docker-compose -f deployment/docker-compose.prod.yml ps
 
-# 2. Перевірте логи
-docker-compose logs api
+# 2. Check logs
+docker-compose -f deployment/docker-compose.prod.yml logs api
 
-# 3. Перевірте порти
+# 3. Check ports
 netstat -tulpn | grep 8000
 
-# 4. Перезапустіть
-docker-compose restart api
+# 4. Restart
+docker-compose -f deployment/docker-compose.prod.yml restart api
 ```
 
-### Проблема: Out of memory
+### Issue: Out of Memory
 
 ```bash
-# Перевірте використання
+# Check usage
 docker stats
 
-# Збільшіть в docker-compose.yml
+# Increase in docker-compose.yml
 services:
   api:
     deploy:
@@ -353,49 +353,49 @@ services:
           memory: 4G
 ```
 
-### Проблема: Nginx 502 Bad Gateway
+### Issue: Nginx 502 Bad Gateway
 
 ```bash
-# Перевірте що API контейнер запущений
-docker-compose logs api
+# Check that API container is running
+docker-compose -f deployment/docker-compose.prod.yml logs api
 
-# Перевірте nginx конфіг
-docker-compose exec nginx nginx -t
+# Check nginx config
+docker-compose -f deployment/docker-compose.prod.yml exec nginx nginx -t
 
-# Перезапустіть nginx
-docker-compose restart nginx
+# Restart nginx
+docker-compose -f deployment/docker-compose.prod.yml restart nginx
 ```
 
 ---
 
-## Резервні копії та відновлення
+## Backups and Recovery
 
 ```bash
-# Резервна копія Redis data
-docker cp llm-api-redis-1:/data/dump.rdb ./backup/redis-$(date +%Y%m%d).rdb
+# Backup Redis data
+docker cp codeshaper-redis-1:/data/dump.rdb ./backup/redis-$(date +%Y%m%d).rdb
 
-# Відновлення
-docker cp ./backup/redis-20240115.rdb llm-api-redis-1:/data/dump.rdb
-docker-compose restart redis
+# Restore
+docker cp ./backup/redis-20240115.rdb codeshaper-redis-1:/data/dump.rdb
+docker-compose -f deployment/docker-compose.prod.yml restart redis
 ```
 
 ---
 
-## Безпека
+## Security
 
-### Рекомендації
+### Recommendations
 
-- ✅ Завжди використовуйте HTTPS в production
-- ✅ Регулярно оновлюйте залежності: `poetry update`
-- ✅ Використовуйте non-root користувача (вже налаштовано)
-- ✅ Обмежуйте доступ до API через firewall
-- ✅ Ротуйте секрети регулярно
-- ✅ Моніторьте логи на аномалії
+- ✅ Always use HTTPS in production
+- ✅ Regularly update dependencies: `poetry update`
+- ✅ Use non-root user (already configured)
+- ✅ Restrict API access via firewall
+- ✅ Rotate secrets regularly
+- ✅ Monitor logs for anomalies
 
-### Firewall правила
+### Firewall Rules
 
 ```bash
-# Дозволити тільки HTTPS та SSH
+# Allow only HTTPS and SSH
 sudo ufw default deny incoming
 sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
@@ -405,11 +405,12 @@ sudo ufw enable
 
 ---
 
-## Подальші кроки
+## Next Steps
 
-1. [Встановіть SSL сертифікат](#httpssll-сертифікати)
-2. [Налаштуйте моніторинг](#метрики-і-моніторинг)
-3. [Додайте authentication](#optional-authentication)
-4. [Налаштуйте CI/CD](#cicd-pipeline)
+1. [Install SSL certificate](#httpssssl-certificates)
+2. [Set up monitoring](#metrics-and-monitoring)
+3. [Add authentication](#optional-authentication)
+4. [Configure CI/CD](#cicd-pipeline)
 
-Питання? Відкрийте Issue на GitHub!
+Questions? Open an issue on GitHub!
+
