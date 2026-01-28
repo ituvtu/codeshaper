@@ -3,490 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Review Assistant</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .container {
-            background: #f5f7fa;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            max-width: 900px;
-            width: 100%;
-            padding: 40px;
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-        .subtitle {
-            color: #546e7a;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #37474f;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        input[type="file"], select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cfd8dc;
-            border-radius: 4px;
-            font-size: 14px;
-            background: white;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        input[type="file"]:hover, select:hover {
-            border-color: #5c7cfa;
-        }
-        input[type="file"]:focus, select:focus {
-            outline: none;
-            border-color: #4263eb;
-            box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.1);
-        }
-        button {
-            background: linear-gradient(135deg, #4263eb 0%, #364fc7 100%);
-            color: white;
-            padding: 14px 32px;
-            border: none;
-            border-radius: 4px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        button:hover {
-            background: linear-gradient(135deg, #364fc7 0%, #2f4bb8 100%);
-            box-shadow: 0 4px 12px rgba(66, 99, 235, 0.3);
-        }
-        button:active {
-            transform: translateY(1px);
-        }
-        button:disabled {
-            background: #90a4ae;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding: 12px;
-            background: white;
-            border-radius: 4px;
-            border: 1px solid #cfd8dc;
-        }
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #b0bec5;
-            transition: .3s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background: #4263eb;
-        }
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-        .toggle-label {
-            color: #37474f;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .loader {
-            display: none;
-            text-align: center;
-            margin: 30px 0;
-        }
-        .spinner {
-            border: 4px solid #eceff1;
-            border-top: 4px solid #4263eb;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loader p {
-            color: #546e7a;
-            font-size: 0.95rem;
-        }
-        .result {
-            display: none;
-            margin-top: 30px;
-        }
-        .result h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        .section {
-            background: white;
-            padding: 20px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border-left: 4px solid #4263eb;
-        }
-        .section h3 {
-            color: #2c3e50;
-            margin-bottom: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        .summary-text {
-            color: #455a64;
-            line-height: 1.6;
-        }
-        .rating {
-            display: inline-block;
-            background: linear-gradient(135deg, #4263eb 0%, #364fc7 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        .issue {
-            background: #eceff1;
-            padding: 14px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            border-left: 4px solid #ffa726;
-        }
-        .issue.info {
-            border-left-color: #42a5f5;
-        }
-        .issue.warning {
-            border-left-color: #ffa726;
-        }
-        .issue.error {
-            border-left-color: #ef5350;
-        }
-        .issue-header {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-        }
-        .issue-description {
-            color: #546e7a;
-            font-size: 0.9rem;
-        }
-        .refactored-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        .copy-btn {
-            background: #4263eb;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 16px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-        }
-        .copy-btn:hover {
-            background: #364fc7;
-        }
-        .code-block {
-            background: #263238;
-            color: #cfd8dc;
-            padding: 16px;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .changes-list {
-            background: #e3f2fd;
-            padding: 16px;
-            border-radius: 4px;
-            border-left: 4px solid #42a5f5;
-        }
-        .changes-list ul {
-            list-style: none;
-            padding: 0;
-        }
-        .changes-list li {
-            padding: 8px 0;
-            color: #37474f;
-            border-bottom: 1px solid #bbdefb;
-            font-size: 0.9rem;
-        }
-        .changes-list li:last-child {
-            border-bottom: none;
-        }
-        .changes-list li:before {
-            content: "✓ ";
-            color: #42a5f5;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 20px;
-            display: none;
-            border-left: 4px solid #ef5350;
-        }
-        .no-issues {
-            color: #43a047;
-            font-weight: 600;
-            background: #e8f5e9;
-            padding: 12px;
-            border-radius: 4px;
-            border-left: 4px solid #43a047;
-        }
-    </style>
+    <title>CodeShaper - Code Review Assistant</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Highlight.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <h1>Code Review Assistant</h1>
-        <p class="subtitle">Upload your code for AI-powered analysis and refactoring</p>
-        
-        <form id="reviewForm">
-            <div class="form-group">
-                <label for="file">Code File</label>
-                <input type="file" id="file" name="file" accept=".py,.js,.ts,.jsx,.tsx,.java,.cpp,.c,.go,.rs,.rb,.php" required>
+<body class="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 min-h-screen py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-8 text-white">
+                <h1 class="text-3xl font-bold mb-2">CodeShaper</h1>
+                <p class="text-blue-100">Upload your code for AI-powered analysis and refactoring</p>
             </div>
-            
-            <div class="form-group">
-                <label for="language">Programming Language</label>
-                <select id="language" name="language" required>
-                    <option value="python">Python</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="typescript">TypeScript</option>
-                    <option value="java">Java</option>
-                    <option value="cpp">C++</option>
-                    <option value="c">C</option>
-                    <option value="go">Go</option>
-                    <option value="rust">Rust</option>
-                    <option value="ruby">Ruby</option>
-                    <option value="php">PHP</option>
-                </select>
+
+            <!-- Main Content -->
+            <div class="p-8">
+                <!-- Form -->
+                <form id="reviewForm" class="space-y-6">
+                    <!-- File Input -->
+                    <div>
+                        <label for="file" class="block text-sm font-bold text-gray-700 mb-2">Code File</label>
+                        <input 
+                            type="file" 
+                            id="file" 
+                            name="file" 
+                            accept=".py,.js,.ts,.jsx,.tsx,.java,.cpp,.c,.go,.rs,.rb,.php"
+                            required
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition"
+                        >
+                    </div>
+
+                    <!-- Language Select -->
+                    <div>
+                        <label for="language" class="block text-sm font-bold text-gray-700 mb-2">Programming Language</label>
+                        <select 
+                            id="language" 
+                            name="language"
+                            required
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition bg-white"
+                        >
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                            <option value="c">C</option>
+                            <option value="go">Go</option>
+                            <option value="rust">Rust</option>
+                            <option value="ruby">Ruby</option>
+                            <option value="php">PHP</option>
+                        </select>
+                    </div>
+
+                    <!-- Toggle Refactor -->
+                    <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                id="includeRefactored" 
+                                name="includeRefactored" 
+                                checked
+                                class="sr-only peer"
+                            >
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                        </label>
+                        <label for="includeRefactored" class="text-sm font-medium text-gray-700 cursor-pointer">Generate refactored code (slower)</label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit" 
+                        id="submitBtn"
+                        class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 rounded-lg transition transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Analyze Code
+                    </button>
+                </form>
+
+                <!-- Loader -->
+                <div id="loader" style="display: none;" class="text-center my-8">
+                    <div class="inline-block">
+                        <div class="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                    </div>
+                    <p class="text-gray-600 mt-4">Analyzing your code...</p>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" style="display: none;" class="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-6 text-red-700"></div>
+
+                <!-- Results -->
+                <div id="result" style="display: none;" class="mt-8 space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Analysis Results</h2>
+                    <div id="reviewSection"></div>
+                    <div id="refactoredSection"></div>
+                </div>
             </div>
-            
-            <div class="toggle-container">
-                <label class="toggle-switch">
-                    <input type="checkbox" id="includeRefactored" name="includeRefactored" checked>
-                    <span class="slider"></span>
-                </label>
-                <label for="includeRefactored" class="toggle-label">Generate refactored code (slower)</label>
-            </div>
-            
-            <button type="submit" id="submitBtn">Analyze Code</button>
-        </form>
-        
-        <div class="loader" id="loader">
-            <div class="spinner"></div>
-            <p>Analyzing your code...</p>
-        </div>
-        
-        <div class="error-message" id="errorMessage"></div>
-        
-        <div class="result" id="result">
-            <h2>Analysis Results</h2>
-            <div id="reviewSection"></div>
-            <div id="refactoredSection"></div>
         </div>
     </div>
 
-    <script>
-        const form = document.getElementById('reviewForm');
-        const loader = document.getElementById('loader');
-        const result = document.getElementById('result');
-        const errorMessage = document.getElementById('errorMessage');
-        const submitBtn = document.getElementById('submitBtn');
-        const reviewSection = document.getElementById('reviewSection');
-        const refactoredSection = document.getElementById('refactoredSection');
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Reset UI
-            loader.style.display = 'block';
-            result.style.display = 'none';
-            errorMessage.style.display = 'none';
-            submitBtn.disabled = true;
-            
-            const formData = new FormData();
-            formData.append('file', document.getElementById('file').files[0]);
-            formData.append('language', document.getElementById('language').value);
-            
-            const includeRefactored = document.getElementById('includeRefactored').checked;
-            const endpoint = includeRefactored ? '/api/v1/review-and-refactor' : '/api/v1/review';
-            
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Failed to analyze code');
-                }
-                
-                const data = await response.json();
-                displayResults(data, includeRefactored);
-            } catch (error) {
-                errorMessage.textContent = error.message;
-                errorMessage.style.display = 'block';
-            } finally {
-                loader.style.display = 'none';
-                submitBtn.disabled = false;
-            }
-        });
-        
-        function displayResults(data, includeRefactored) {
-            // Review section
-            let reviewHTML = `
-                <div class="section">
-                    <div class="rating">Rating: ${data.rating}/10</div>
-                </div>
-                
-                <div class="section">
-                    <h3>Summary</h3>
-                    <p class="summary-text">${escapeHtml(data.summary)}</p>
-                </div>
-            `;
-            
-            // Issues
-            if (data.issues && data.issues.length > 0) {
-                reviewHTML += '<div class="section"><h3>Issues Found</h3>';
-                data.issues.forEach(issue => {
-                    reviewHTML += `
-                        <div class="issue ${issue.severity}">
-                            <div class="issue-header">
-                                Line ${issue.line} - ${issue.severity.toUpperCase()}
-                            </div>
-                            <div class="issue-description">${escapeHtml(issue.description)}</div>
-                        </div>
-                    `;
-                });
-                reviewHTML += '</div>';
-            } else {
-                reviewHTML += '<div class="section"><div class="no-issues">✓ No issues found!</div></div>';
-            }
-            
-            reviewSection.innerHTML = reviewHTML;
-            
-            // Refactored section
-            if (includeRefactored && data.refactored_code) {
-                let refactoredHTML = '<div class="section">';
-                refactoredHTML += '<div class="refactored-header">';
-                refactoredHTML += '<h3>Refactored Code</h3>';
-                refactoredHTML += '<button class="copy-btn" id="copyBtn" type="button">Copy Code</button>';
-                refactoredHTML += '</div>';
-                refactoredHTML += `<pre class="code-block" id="refactoredCode">${escapeHtml(data.refactored_code)}</pre>`;
-                refactoredHTML += '</div>';
-                
-                // Changes
-                if (data.changes_made && data.changes_made.length > 0) {
-                    refactoredHTML += '<div class="section">';
-                    refactoredHTML += '<h3>Changes Made</h3>';
-                    refactoredHTML += '<div class="changes-list"><ul>';
-                    data.changes_made.forEach(change => {
-                        refactoredHTML += `<li>${escapeHtml(change)}</li>`;
-                    });
-                    refactoredHTML += '</ul></div></div>';
-                }
-                
-                refactoredSection.innerHTML = refactoredHTML;
-                
-                // Add copy button handler
-                const copyBtn = document.getElementById('copyBtn');
-                if (copyBtn) {
-                    copyBtn.addEventListener('click', async () => {
-                        try {
-                            await navigator.clipboard.writeText(data.refactored_code);
-                            copyBtn.textContent = 'Copied!';
-                            setTimeout(() => (copyBtn.textContent = 'Copy Code'), 1500);
-                        } catch (err) {
-                            copyBtn.textContent = 'Copy failed';
-                            setTimeout(() => (copyBtn.textContent = 'Copy Code'), 1500);
-                        }
-                    });
-                }
-            } else {
-                refactoredSection.innerHTML = '';
-            }
-            
-            result.style.display = 'block';
-            result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-    </script>
+    <script src="/static/js/app.js"></script>
 </body>
 </html>
