@@ -1,0 +1,34 @@
+# CODEOWNERS
+# This file determines who can approve Pull Requests
+
+# Default owners for everything
+* @yourname
+
+# API routes
+app/api/routes.py @yourname
+
+# Business logic
+app/services/ @yourname
+
+# Core configuration
+app/core/ @yourname
+
+# Database & migrations
+migrations/ @yourname
+
+# Tests
+tests/ @yourname
+
+# Infrastructure
+docker* @yourname
+nginx.conf @yourname
+prometheus.yml @yourname
+Makefile @yourname
+
+# Documentation
+*.md @yourname
+.github/workflows/ @yourname
+
+# Configuration
+pyproject.toml @yourname
+.pre-commit-config.yaml @yourname

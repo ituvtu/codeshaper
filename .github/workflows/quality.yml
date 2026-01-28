@@ -1,0 +1,76 @@
+name: Code Quality & Documentation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: poetry install --no-interaction
+    
+    - name: Check imports with isort
+      run: poetry run isort --check-only app/ tests/ || true
+      continue-on-error: true
+    
+    - name: Check formatting with Black
+      run: poetry run black --check app/ tests/ --diff || true
+      continue-on-error: true
+    
+    - name: Run Ruff linter
+      run: poetry run ruff check app/ tests/ || true
+      continue-on-error: true
+
+  coverage:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: poetry install --no-interaction
+    
+    - name: Run tests with coverage
+      run: poetry run pytest tests/ --cov=app --cov-report=term-missing --cov-report=json
+    
+    - name: Display coverage report
+      run: poetry run coverage report
+      continue-on-error: true
+    
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.json
+        fail_ci_if_error: false
+      continue-on-error: true

@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: code-review-api-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - API_KEY=${API_KEY}
+      - URL=${URL}
+      - MODEL=${MODEL}
+      - ENVIRONMENT=development
+    volumes:
+      # Hot reload for development
+      - .:/app:cached
+      - /app/.venv
+      - /app/__pycache__
+    command: >
+      uvicorn app.main:app 
+      --host 0.0.0.0 
+      --port 8000 
+      --reload 
+      --reload-dirs=app
+    networks:
+      - code-review-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: code-review-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - code-review-network
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+networks:
+  code-review-network:
+    driver: bridge
+
+volumes:
+  redis-data:
