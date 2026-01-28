@@ -1,25 +1,17 @@
-# LLM-Powered Code Review API
+# CodeShaper
 
-Professional FastAPI microservice for intelligent code review, refactoring suggestions, and code analysis using Groq's LLM API.
+Professional FastAPI service for intelligent AI-powered code analysis. Delivers automated code reviews, refactoring suggestions, and quality improvements for Python, JavaScript, TypeScript, Java, and more. Built on Groq LLM with production-ready Docker setup, Redis caching, and Prometheus monitoring. 21+ tests, clean architecture, fully deployment-ready.
 
 ## Features
-✨ **Core Features**
-- 🔍 Intelligent code review analysis
-- 🔧 Automated refactoring suggestions
-- ⚡ Combined review & refactor operations
-- 🌐 RESTful API with FastAPI
-- 📦 Production-ready Docker setup
-- 🔄 Hot reload for development
-- 🧪 Comprehensive test suite (21+ tests)
-- 📊 Multi-language support (.py, .js, .ts, .java, .cpp, .go, .rs, .rb, .php, etc.)
 
-🏗️ **Architecture**
-- Clean layering: API routes → Business logic → LLM services
-- Async/await throughout for high performance
-- Pydantic v2 schemas with strict validation
-- Redis caching layer
-- Nginx reverse proxy
-- PostgreSQL database ready
+- 🔍 **Intelligent Code Review** - AI-powered analysis with severity ratings and line-specific issues
+- 🔧 **Automated Refactoring** - Smart suggestions for code improvements
+- ⚡ **Combined Operations** - Review and refactor code in one request
+- 🌐 **Multi-Language** - Python, JavaScript, TypeScript, Java, C++, Go, Rust, Ruby, PHP, and more
+- 🚀 **Production Ready** - Docker multi-stage builds, health checks, non-root user
+- 🔄 **Hot Reload** - Development environment with live code updates
+- 📊 **Comprehensive Tests** - 21+ passing tests with coverage reporting
+- 🔐 **Secure** - HTTPS/SSL support, rate limiting, input validation
 
 ## Quick Start
 
@@ -30,50 +22,30 @@ Professional FastAPI microservice for intelligent code review, refactoring sugge
 ### Local Development
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/yourusername/llm-api.git
-cd llm-api
-
-# 2. Install dependencies
+# Clone and setup
+git clone https://github.com/ituvtu/codeshaper.git
+cd codeshaper
 poetry install
 
-# 3. Setup environment
+# Configure
 cp .env.example .env
-# Edit .env and add your Groq API key
+# Edit .env with your Groq API key
 
-# 4. Run development server
+# Run
 poetry run uvicorn app.main:app --reload
-
-# 5. Run tests
-poetry run pytest tests/ -v
 ```
 
-Visit:
-- API: http://localhost:8000
-- Docs: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+Visit: http://localhost:8000/docs
 
-### Docker Development
+### Docker
 
 ```bash
-# With hot reload and Redis
+# Development with hot reload
 docker-compose -f deployment/docker-compose.dev.yml up
 
-# Run tests
-docker-compose -f deployment/docker-compose.dev.yml exec api poetry run pytest tests/
-```
-
-### Docker Production
-
-```bash
-# Full stack with Nginx, Redis, PostgreSQL
+# Production full stack
 docker-compose -f deployment/docker-compose.prod.yml up -d
-
-# Check status
-docker-compose ps
 ```
-
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions.
 
 ## API Endpoints
 
@@ -81,7 +53,6 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instruction
 ```bash
 GET /health
 ```
-Returns server health status.
 
 ### Code Review
 ```bash
@@ -89,21 +60,8 @@ POST /api/v1/review
 Content-Type: multipart/form-data
 
 Parameters:
-  - file: Code file to review (required)
-  - language: Programming language (auto-detected from extension)
-
-Response:
-{
-  "summary": "Code review analysis...",
-  "rating": 8,
-  "issues": [
-    {
-      "severity": "warning",
-      "line": 42,
-      "description": "Missing error handling"
-    }
-  ]
-}
+  - file: Code file to review
+  - language: Programming language (auto-detected)
 ```
 
 ### Code Refactoring
@@ -112,14 +70,8 @@ POST /api/v1/refactor
 Content-Type: multipart/form-data
 
 Parameters:
-  - file: Code file to refactor (required)
+  - file: Code file to refactor
   - language: Programming language (auto-detected)
-
-Response:
-{
-  "refactored_code": "improved code here...",
-  "changes": ["Added type hints", "Optimized loop"]
-}
 ```
 
 ### Combined Review & Refactor
@@ -128,241 +80,105 @@ POST /api/v1/review-and-refactor
 Content-Type: multipart/form-data
 
 Parameters:
-  - file: Code file (required)
+  - file: Code file
   - language: Programming language (auto-detected)
-
-Response:
-{
-  "summary": "Review analysis...",
-  "rating": 8,
-  "issues": [...],
-  "refactored_code": "improved code...",
-  "changes": [...]
-}
 ```
+
+Full examples and response formats: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ## Configuration
 
-Environment variables (`.env`):
+Environment variables in `.env`:
 
 ```bash
-# LLM Configuration
-API_KEY=gsk_your_groq_api_key          # Required
-MODEL=llama-3.1-8b-instant             # Default model
-
-# Server
-HOST=0.0.0.0
+API_KEY=your_groq_api_key_here     # Required
+MODEL=llama-3.1-8b-instant         # LLM model
+REDIS_URL=redis://localhost:6379   # Cache (optional)
+POSTGRES_URL=postgresql://...      # Database (optional)
 PORT=8000
-LOG_LEVEL=info                         # debug, info, warning, error
-
-# Cache & Database
-REDIS_URL=redis://localhost:6379/0
-POSTGRES_URL=postgresql://user:pass@localhost/db
-
-# Rate Limiting
-RATE_LIMIT_ENABLED=true
-RATE_LIMIT_REQUESTS=100
-RATE_LIMIT_WINDOW=3600
+LOG_LEVEL=info
 ```
 
-See [deployment/.env.example](deployment/.env.example) for full configuration template.
+See [deployment/.env.example](deployment/.env.example) for all options.
 
-## Development Commands
-
-Use `Makefile` for convenient commands:
+## Development
 
 ```bash
-make help              # Show all commands
-make install           # Install dependencies
-make dev              # Run development server
-make test             # Run tests
-make test-cov         # Tests with coverage
-make lint             # Run linters
-make format           # Format code
-make docker-dev       # Docker development
-make docker-prod      # Docker production
-make clean            # Clean cache files
+# Tests
+poetry run pytest tests/ -v
+
+# Code quality
+make lint       # Linting checks
+make format     # Format code
+make test-cov   # Tests with coverage
+
+# All commands
+make help
 ```
 
 ## Project Structure
 
 ```
-llm-api/
-├── app/
-│   ├── main.py                 # FastAPI app initialization
-│   ├── api/
-│   │   ├── routes.py          # API endpoints
-│   │   └── dependencies.py    # Dependency injection
-│   ├── services/
-│   │   ├── reviewer.py        # Business logic
-│   │   └── llm_client.py      # Groq API client
-│   ├── schemas/
-│   │   └── review.py          # Pydantic models
-│   ├── core/
-│   │   ├── config.py          # Configuration
-│   │   └── exceptions.py      # Custom exceptions
-│   └── static/
-│       └── index.html         # Web GUI
-├── tests/
-│   └── test_api.py            # Comprehensive tests (21+)
-├── deployment/                # All deployment configs
-│   ├── docker-compose.dev.yml
-│   ├── docker-compose.prod.yml
+codeshaper/
+├── app/                    # Application code
+│   ├── api/routes.py      # API endpoints
+│   ├── services/          # Business logic & LLM client
+│   └── static/index.html  # Web UI
+├── tests/test_api.py      # 21+ comprehensive tests
+├── deployment/            # Docker & configs
+│   ├── docker-compose.*.yml
 │   ├── nginx.conf
-│   ├── prometheus.yml
-│   └── .env.example
-├── docs/                      # Documentation
-│   ├── ARCHITECTURE.md
-│   └── DEPLOYMENT.md
-├── Dockerfile                 # Multi-stage build
-├── docker-compose.yml         # Basic compose (quick start)
-├── Makefile                   # Convenient commands
-└── README.md                  # This file
+│   └── prometheus.yml
+├── docs/                  # Full documentation
+├── Dockerfile             # Multi-stage build
+└── pyproject.toml         # Dependencies
 ```
-
-## Testing
-
-```bash
-# Run all tests
-poetry run pytest tests/ -v
-
-# Run with coverage
-poetry run pytest tests/ -v --cov=app --cov-report=html
-
-# Watch mode (auto-run on changes)
-poetry run ptw tests/
-```
-
-Current test coverage: **21/21 passing** ✅
-
-## Docker
-
-### Multi-stage Build
-- **Builder stage**: Installs Poetry, builds dependencies
-- **Runtime stage**: Minimal Python image with only needed packages
-- **Security**: Non-root user (appuser:1000)
-- **Signals**: Tini for proper PID 1 handling
-- **Health checks**: Built-in healthchecks
-
-### Production Stack
-- **API**: FastAPI with uvicorn
-- **Reverse Proxy**: Nginx with SSL, caching, rate limiting
-- **Cache**: Redis for session/response caching
-- **Database**: PostgreSQL (optional)
-- **Monitoring**: Prometheus + Grafana
-- **Logging**: Structured JSON logging
 
 ## CI/CD
 
-GitHub Actions pipeline automated on every push to `main` or `develop` branches and on pull requests:
+Automated testing and quality checks on every push:
+- ✅ Test matrix: Python 3.11, 3.12, 3.13
+- ✅ Linting: Ruff, Mypy, Black
+- ✅ Coverage reports
+- 🐳 Docker build validation
+- 📊 Code quality metrics
 
-### Workflow: `ci.yml` - Testing Pipeline
-Runs on every push and PR:
-- **Test matrix**: Python 3.11, 3.12, 3.13 (parallel)
-- **Poetry cache**: Speeds up dependency installation
-- **Linting**: Ruff for code quality checks
-- **Type checking**: Mypy for type safety
-- **Format check**: Black for code style consistency
-- **Tests**: Full pytest suite with coverage
-- **Coverage upload**: Reports to Codecov
-- **Docker build**: Validates Dockerfile (no push)
+View workflows: [.github/workflows/](/.github/workflows/)
 
-### Workflow: `quality.yml` - Code Quality
-Runs on every push and PR:
-- **Import sorting**: isort validation
-- **Code formatting**: Black format checking
-- **Linting**: Ruff analysis
-- **Coverage report**: Detailed coverage metrics
-- **Coverage upload**: Tracks coverage over time
+## Documentation
 
-### How to use:
-1. **Push to main/develop** → CI runs automatically
-2. **Create Pull Request** → Tests & quality checks block merge if failing
-3. **View results** → Check Actions tab in GitHub
+- 📖 **[Deployment Guide](docs/DEPLOYMENT.md)** - Local, Docker, and production setup
+- 🏗️ **[Architecture Guide](docs/ARCHITECTURE.md)** - System design and technical details
+- ⚙️ **[CI/CD Guide](docs/CI_CD.md)** - GitHub Actions workflows
 
-### Local testing before push:
-```bash
-# Run all checks locally
-poetry run pytest tests/ -v
-poetry run ruff check app/
-poetry run black --check app/
-poetry run mypy app/ --ignore-missing-imports
-```
-
-### GitHub Secrets (if needed for future deployment):
-Currently not required. If you plan Docker Hub deployment later:
-- `DOCKER_USERNAME`
-- `DOCKER_PASSWORD`
-
-See [`.github/workflows/`](.github/workflows/) for workflow details.
-
-## Performance
-
-- **Request timeout**: 30s
-- **Concurrent connections**: 1024 (Nginx worker connections)
-- **Memory limit**: 2GB (production)
-- **CPU limit**: 2 cores (production)
-- **Redis eviction**: allkeys-lru with 512MB max
-- **Gzip compression**: Enabled for responses
-
-## Security Features
+## Security
 
 - ✅ Non-root container user
-- ✅ HTTPS/SSL support (nginx)
+- ✅ HTTPS/SSL ready
 - ✅ Rate limiting per IP
+- ✅ Input validation
 - ✅ CORS protection
-- ✅ X-Frame-Options headers
-- ✅ X-Content-Type-Options headers
 - ✅ Environment variable validation
-- ✅ SQL injection prevention (ORM ready)
-
-## Troubleshooting
-
-### API not responding
-```bash
-docker-compose logs api
-docker-compose ps
-docker stats
-```
-
-### Out of memory
-Increase limits in `docker-compose.yml`:
-```yaml
-deploy:
-  resources:
-    limits:
-      memory: 4G
-```
-
-### Database connection issues
-Check `REDIS_URL` and `POSTGRES_URL` in `.env`:
-```bash
-docker-compose exec redis redis-cli ping
-docker-compose exec postgres psql -U user -c "SELECT 1"
-```
-
-See [DEPLOYMENT.md](DEPLOYMENT.md#troubleshooting) for more.
 
 ## Contributing
 
-1. Fork repository
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
-5. Open Pull Request
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/improvement`)
+3. Make changes and test
+4. Push and open Pull Request
+
+All contributions must pass CI/CD checks (tests, linting, coverage).
 
 ## License
 
-MIT License - see LICENSE file
+MIT License - see LICENSE file for details
 
 ## Support
 
-- 📖 [Deployment Guide](docs/DEPLOYMENT.md)
-- 🏗️ [Architecture Guide](docs/ARCHITECTURE.md)
-- 🐛 [Issue Tracker](https://github.com/yourusername/llm-api/issues)
-- 💬 [Discussions](https://github.com/yourusername/llm-api/discussions)
-- 📧 Email: support@example.com
+- 🐛 [Issue Tracker](https://github.com/ituvtu/codeshaper/issues)
+- 💬 [Discussions](https://github.com/ituvtu/codeshaper/discussions)
+- 📧 Questions? Open an issue on GitHub
 
 ---
 
-**Built with ❤️ using FastAPI, Groq API, and Docker**
+**Built with FastAPI, Groq LLM, and Docker**
