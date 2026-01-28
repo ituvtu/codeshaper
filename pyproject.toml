@@ -18,8 +18,6 @@ pydantic = "^2.9.2"
 pydantic-settings = "^2.6.1"
 python-multipart = "^0.0.18"
 redis = "^5.0.0"
-sqlalchemy = "^2.0.0"
-alembic = "^1.13.0"
 python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -30,7 +28,6 @@ respx = "^0.21.1"
 pytest-watch = "^4.2.0"
 black = "^24.1.0"
 isort = "^5.13.0"
-pylint = "^3.0.0"
 mypy = "^1.8.0"
 ruff = "^0.6.9"
 pre-commit = "^3.6.0"
@@ -104,20 +101,6 @@ disallow_incomplete_defs = false
 check_untyped_defs = false
 ignore_missing_imports = true
 exclude = ["migrations/", "tests/"]
-
-[tool.pylint.messages_control]
-disable = [
-    "C0114",  # Missing module docstring
-    "C0115",  # Missing class docstring
-    "C0116",  # Missing function docstring
-    "R0903",  # Too few public methods
-    "R0913",  # Too many arguments
-    "W0212",  # Protected access
-]
-
-[tool.pylint.design]
-max-args = 10
-max-attributes = 10
 
 [tool.ruff]
 line-length = 100

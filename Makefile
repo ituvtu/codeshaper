@@ -6,14 +6,12 @@ help:
 	@echo "  make dev          - Run development server with hot reload"
 	@echo "  make test         - Run tests with pytest"
 	@echo "  make test-cov     - Run tests with coverage report"
-	@echo "  make lint         - Run linters (pylint, mypy, black)"
+	@echo "  make lint         - Run linters (ruff, mypy, black)"
 	@echo "  make format       - Format code with black and isort"
 	@echo "  make clean        - Clean cache and build artifacts"
-	@echo "  make docker-build - Build Docker image"
 	@echo "  make docker-dev   - Run Docker development environment"
 	@echo "  make docker-prod  - Run Docker production environment"
 	@echo "  make docker-down  - Stop Docker containers"
-	@echo "  make docker-logs  - View Docker logs"
 
 # Installation and setup
 install:
@@ -38,8 +36,8 @@ test-watch:
 
 # Code quality
 lint:
-	@echo "Running Pylint..."
-	-poetry run pylint app/ --disable=C0114,C0115,C0116,R0903 || true
+	@echo "Running Ruff..."
+	poetry run ruff check app/ tests/
 	@echo "Running Mypy..."
 	-poetry run mypy app/ --ignore-missing-imports || true
 	@echo "Checking code format..."

@@ -2,10 +2,10 @@
 # This file determines who can approve Pull Requests
 
 # Default owners for everything
-* @yourname
+* @ituvtu
 
 # API routes
-app/api/routes.py @yourname
+app/api/routes.py @ituvtu
 
 # Business logic
 app/services/ @yourname
