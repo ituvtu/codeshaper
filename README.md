@@ -16,6 +16,7 @@ Professional FastAPI service for intelligent AI-powered code analysis. Delivers 
 ## Quick Start
 
 ### Prerequisites
+
 - Python 3.11+ or Docker
 - Groq API key ([get here](https://console.groq.com/keys))
 
@@ -35,7 +36,7 @@ cp .env.example .env
 poetry run uvicorn app.main:app --reload
 ```
 
-Visit: http://localhost:8000/docs
+Visit: <http://localhost:8000/docs>
 
 ### Docker
 
@@ -50,11 +51,13 @@ docker-compose -f deployment/docker-compose.prod.yml up -d
 ## API Endpoints
 
 ### Health Check
+
 ```bash
 GET /health
 ```
 
 ### Code Review
+
 ```bash
 POST /api/v1/review
 Content-Type: multipart/form-data
@@ -65,6 +68,7 @@ Parameters:
 ```
 
 ### Code Refactoring
+
 ```bash
 POST /api/v1/refactor
 Content-Type: multipart/form-data
@@ -75,6 +79,7 @@ Parameters:
 ```
 
 ### Combined Review & Refactor
+
 ```bash
 POST /api/v1/review-and-refactor
 Content-Type: multipart/form-data
@@ -118,7 +123,7 @@ make help
 
 ## Project Structure
 
-```
+```ascii
 codeshaper/
 ├── app/                    # Application code
 │   ├── api/routes.py      # API endpoints
@@ -137,6 +142,7 @@ codeshaper/
 ## CI/CD
 
 Automated testing and quality checks on every push:
+
 - ✅ Test matrix: Python 3.11, 3.12, 3.13
 - ✅ Linting: Ruff, Mypy, Black
 - ✅ Coverage reports
@@ -180,5 +186,3 @@ MIT License - see LICENSE file for details
 - 📧 Questions? Open an issue on GitHub
 
 ---
-
-**Built with FastAPI, Groq LLM, and Docker**
