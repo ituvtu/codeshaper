@@ -4,7 +4,7 @@
 
 ## System Overview
 
-```
+```ascii
 ┌─────────────────────────────────────────────────────────────┐
 │                        User / Client                         │
 └───────────────────────────┬─────────────────────────────────┘
@@ -71,6 +71,7 @@
 ### 1. API Routes Layer (`app/api/routes.py`)
 
 **Зобов'язання:**
+
 - Прийняття HTTP запитів
 - Валідація input даних
 - Обробка multipart/form-data
@@ -78,6 +79,7 @@
 - Обробка помилок на рівні API
 
 **Основні функції:**
+
 ```python
 @router.get("/health")
 async def health_check() -> dict
@@ -93,6 +95,7 @@ async def review_and_refactor_code(file: UploadFile, language: str = None) -> Co
 ```
 
 **Відповідальність:**
+
 - ✅ HTTP заголовки та status codes
 - ✅ Валідація content-type
 - ✅ Обмеження розміру файлу
@@ -105,12 +108,14 @@ async def review_and_refactor_code(file: UploadFile, language: str = None) -> Co
 #### `reviewer.py`
 
 **Зобов'язання:**
+
 - Аналіз коду
 - Генерація промптів
 - Парсинг LLM відповідей
 - Підготовка результатів
 
 **Key Methods:**
+
 ```python
 class CodeReviewer:
     async def review(code: str, language: str) -> ReviewResult
@@ -123,7 +128,8 @@ class CodeReviewer:
 ```
 
 **Архітектура:**
-```
+
+```text
 Code Input
     │
     ├─► Language Detection
@@ -146,12 +152,14 @@ Code Input
 #### `llm_client.py`
 
 **Зобов'язання:**
+
 - HTTP комунікація з Groq API
 - Управління connection pooling
 - Retry logic та exponential backoff
 - Обробка API errors
 
 **Key Methods:**
+
 ```python
 class GroqClient:
     async def send_message(prompt: str, model: str) -> str
@@ -160,7 +168,8 @@ class GroqClient:
 ```
 
 **Retry Strategy:**
-```
+
+```text
 Request
   │
   ├─ Success (200) → Return response
@@ -179,11 +188,13 @@ Request
 #### `dependencies.py`
 
 **Зобов'язання:**
+
 - Dependency injection
 - Configuration management
 - Resource initialization
 
 **Key Providers:**
+
 ```python
 async def get_reviewer() -> CodeReviewer
 async def get_llm_client() -> GroqClient
@@ -196,11 +207,13 @@ async def get_llm_client() -> GroqClient
 #### `config.py`
 
 **Зобов'язання:**
+
 - Завантаження environment variables
 - Валідація конфігурації
 - Значення за замовчуванням
 
 **Configuration:**
+
 ```python
 class Settings(BaseSettings):
     API_KEY: str              # Groq API key
@@ -215,6 +228,7 @@ class Settings(BaseSettings):
 #### `exceptions.py`
 
 **Зобов'язання:**
+
 - Визначення custom exceptions
 - Обробка помилок
 
@@ -237,6 +251,7 @@ class JSONParseError(CodeReviewError):
 ### 5. Data Models (`app/schemas/`)
 
 **Назначення:**
+
 - Pydantic моделі для валідації
 - Сериализация/десериализація JSON
 - Type hints та документація
@@ -266,7 +281,7 @@ class CombinedResult(ReviewResult, RefactorResult):
 
 ### 1. Code Review Flow
 
-```
+```plaintext
 Client Request
     │
     ├─ File upload with language
@@ -307,7 +322,7 @@ Client Request
 
 ### 2. Refactoring Flow
 
-```
+```text
 Similar to review, but:
     - Generate refactoring-specific prompt
     - Parse refactored code from response
@@ -317,7 +332,7 @@ Similar to review, but:
 
 ### 3. Combined Flow
 
-```
+```text
 Client Request
     │
     ▼
@@ -338,7 +353,7 @@ Merge results into CombinedResult
 
 ### Error Hierarchy
 
-```
+```ascii
 Exception
 ├── CodeReviewError
 │   ├── LLMAPIError
@@ -373,7 +388,7 @@ Exception
 
 ### Caching Strategy
 
-```
+```ascii
 Request
   │
   ├─ Check Redis cache
@@ -407,7 +422,7 @@ async def review_code(...):
 
 ### Concurrency Model
 
-```
+```ascii
 Nginx (worker_connections: 1024)
     │
     ├─ Request 1 ──► FastAPI ──► Groq API
@@ -424,21 +439,25 @@ Maximum: 1024 concurrent connections
 ## Security Considerations
 
 ### Authentication & Authorization
+
 - ❌ Currently no authentication (stateless API)
 - 🔜 Future: API key validation, JWT tokens
 
 ### Input Validation
+
 - ✅ File size limits (5MB default)
 - ✅ Language whitelist
 - ✅ Content-Type validation
 - ✅ Pydantic schema validation
 
 ### Secrets Management
+
 - ✅ API keys in environment variables
 - ✅ Never logged or exposed
 - ✅ .env files in .gitignore
 
 ### Rate Limiting
+
 - ✅ Nginx rate limiting per IP
 - ✅ API burst limits
 
@@ -448,7 +467,7 @@ Maximum: 1024 concurrent connections
 
 ### Test Pyramid
 
-```
+```ascii
           /\              Unit Tests (70%)
          /  \             - Service logic
         /____\            - Utilities
@@ -478,7 +497,8 @@ def mock_llm(respx_mock):
 ## Deployment Architecture
 
 ### Development (`docker-compose.dev.yml`)
-```
+
+```ascii
 Client:8000 → FastAPI (hot reload)
                 │
                 ├─ Redis:6379
@@ -486,7 +506,8 @@ Client:8000 → FastAPI (hot reload)
 ```
 
 ### Production (`docker-compose.prod.yml`)
-```
+
+```ascii
 Client:80/443 → Nginx (reverse proxy, SSL)
                     │
                     ├─ FastAPI:8000 (uvicorn)
@@ -504,7 +525,7 @@ Client:80/443 → Nginx (reverse proxy, SSL)
 
 ### Horizontal Scaling
 
-```
+```ascii
                     ┌──────────────┐
                     │   Nginx      │
                     │ Load Balancer│
@@ -544,7 +565,7 @@ resources:
 
 ### Metrics Collection
 
-```
+```ascii
 FastAPI
   │
   ├─ Prometheus client
@@ -580,6 +601,7 @@ logger.info("Code review started", extra={
 ## Future Improvements
 
 ### Planned Features
+
 - [ ] Database persistence
 - [ ] User authentication & API keys
 - [ ] Caching layer optimization
@@ -590,6 +612,7 @@ logger.info("Code review started", extra={
 - [ ] Analytics dashboard
 
 ### Potential Optimizations
+
 - [ ] Response streaming for large refactors
 - [ ] Batch processing API
 - [ ] Request prioritization
